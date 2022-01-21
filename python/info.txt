@@ -1,0 +1,1 @@
+This code requires root 5 and starlight installed. The bash script needs to be edited to direct the path to starlight. It also requires slight.in to be in the same folder of this code.
