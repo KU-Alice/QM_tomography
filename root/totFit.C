@@ -18,7 +18,7 @@ using namespace RooFit;
 void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_sig = "ang_sig.txt",  const char* infilename_bkg = "ang_bkg_low.txt")
 {
     //roofit
-    RooRealVar t_tot("t_tot", "Cos(theta) [sig+bkg]", -1., 1) ;
+    RooRealVar t_tot("t_tot", "Cos(theta) [sig+bkg]", -1., 1.) ;
     RooRealVar p_tot("p_tot", "phi angle [sig+bkg]", 0., 2*3.141616) ;
 
     RooRealVar t_sig("t_sig", "Cos(theta) [sig]", -1., 1) ;
@@ -26,7 +26,7 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
 
     RooRealVar t_bkg("t_bkg", "Cos(theta) [bkg]", -1., 1) ;
     RooRealVar p_bkg("p_bkg", "phi angle [bkg]", 0., 2*3.141616) ;
-
+    //reading data
     RooDataSet* dataAngl_tot = RooDataSet::read(infilename_tot, RooArgList(t_tot,p_tot), "Q") ;
     RooDataSet* dataAngl_sig = RooDataSet::read(infilename_sig, RooArgList(t_sig,p_sig), "Q") ;
     RooDataSet* dataAngl_bkg = RooDataSet::read(infilename_bkg, RooArgList(t_bkg,p_bkg), "Q") ;
@@ -51,32 +51,32 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     //The m parameters are defined between -1 and 1
     //signal + background
     RooRealVar mt1("mt1", "mt1", 0);
-    RooRealVar mt2("mt2", "mt2", 0.5,-1,1);
-    RooRealVar mt3("mt3", "mt3", 0.5, -1,1);
-    RooRealVar mt4("mt4", "mt4",0);//-1.0,1.);
-    RooRealVar mt5("mt5", "mt5",0);// 0.5,-1,1);
-    RooRealVar mt6("mt6", "mt6", -1.0,1.);
-    RooRealVar mt7("mt7", "mt7",0);//0.5,-1.0,1.);
-    RooRealVar mt8("mt8", "mt8", -1.0,1.);
-    RooRealVar mt9("mt9", "mt9",  -1.0,1.);
+    RooRealVar mt2("mt2", "mt2", 0.3,-1,1);
+    RooRealVar mt3("mt3", "mt3",0.4 -1,1);
+    RooRealVar mt4("mt4", "mt4",-1.0,1.);
+    RooRealVar mt5("mt5", "mt5",0.5,-1,1);
+    RooRealVar mt6("mt6", "mt6",0.2,-1.0,1.);
+    RooRealVar mt7("mt7", "mt7",0.5,-1.0,1.);
+    RooRealVar mt8("mt8", "mt8",-1.0,1.);
+    RooRealVar mt9("mt9", "mt9", -1.0,1.);
     //signal
     RooRealVar ms1("ms1", "ms1", 0);
-    RooRealVar ms2("ms2", "ms2", 0.5,-1,1);
-    RooRealVar ms3("ms3", "ms3", 0.5, -1,1);
-    RooRealVar ms4("ms4", "ms4", 0);//-1.0,1.);
-    RooRealVar ms5("ms5", "ms5", 0);//0.5,-1,1);
-    RooRealVar ms6("ms6", "ms6", -1.0,1.);
-    RooRealVar ms7("ms7", "ms7",0);//0.5,-1.0,1.);
+    RooRealVar ms2("ms2", "ms2", 0.2,-1,1);
+    RooRealVar ms3("ms3", "ms3", 0.2, -1,1);
+    RooRealVar ms4("ms4", "ms4", -1.0,1.);
+    RooRealVar ms5("ms5", "ms5",0.5,-1,1);
+    RooRealVar ms6("ms6", "ms6",0.2,-1.0,1.);
+    RooRealVar ms7("ms7", "ms7",0.5,-1.0,1.);
     RooRealVar ms8("ms8", "ms8",-1.0,1.);
     RooRealVar ms9("ms9", "ms9", -1.0,1.);
     //background
     RooRealVar mb1("mb1", "mb1", 0);
-    RooRealVar mb2("mb2", "mb2", 0.5,-1,1);
-    RooRealVar mb3("mb3", "mb3", 0.5, -1,1);
-    RooRealVar mb4("mb4", "mb4",0);//-1.0,1.);
-    RooRealVar mb5("mb5", "mb5",0);//0.5,-1,1);
-    RooRealVar mb6("mb6", "mb6", -1.0,1.);
-    RooRealVar mb7("mb7", "mb7",0);// -1.0,1.);
+    RooRealVar mb2("mb2", "mb2", 0.3,-1,1);
+    RooRealVar mb3("mb3", "mb3", 0.3, -1,1);
+    RooRealVar mb4("mb4", "mb4",-1.0,1.);
+    RooRealVar mb5("mb5", "mb5",0.5,-1,1);
+    RooRealVar mb6("mb6", "mb6",0.3,-1.0,1.);
+    RooRealVar mb7("mb7", "mb7", -1.0,1.);
     RooRealVar mb8("mb8", "mb8",-1.0,1.);
     RooRealVar mb9("mb9", "mb9", -1.0,1.);
 
@@ -84,14 +84,16 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     //SIGNAL + BACKGROUND -------------------------------------------------------------------------------------------------------------------------
     RooGenericPdf Pdf_theta_tot("Pdf_theta_tot", "Pdf_theta_tot", "(1.5708*(1+ mt3*mt3) + 1.3823*(mt2*mt5+mt7*mt8-mt6*mt9)*t_tot + (1.5708-4.71239*mt3*mt3)*t_tot*t_tot)", RooArgSet(t_tot, mt2,mt3,mt5,mt6,mt7,mt8,mt9));
     RooGenericPdf Pdf_phi_tot("Pdf_phi_tot", "Pdf_phi_tot", "(0.66666667 + 0.345575*mt3*mt9*cos(p_tot)+0.33333333*(-1+2*mt2*mt2+mt3*mt3+2*mt8*mt8+2*mt9*mt9)*cos(2*p_tot)-0.345575*mt3*mt7*sin(p_tot)-0.66666667*(mt2*mt4+mt6*mt8+mt7*mt8)*sin(2*p_tot))", RooArgSet(p_tot, mt2,mt3,mt4,mt6,mt7,mt8,mt9));
+    RooGenericPdf Pdf_dN_dOmega_tot("Pdf_dN_dOmega_tot", "Pdf_dN_dOmega_tot", "(0.25*(1+mt3*mt3) +0.25*(1-3*mt3*mt3)*t_tot*t_tot -0.5* mt3* mt6* 2* TMath::Sqrt(1- t_tot*t_tot)* t_tot* cos(p_tot)+0.25*(2*mt2*mt2+mt3*mt3-1)*(1-t_tot*t_tot)*cos(2*p_tot))", RooArgSet(p_tot,t_tot, mt2,mt3,mt6));
 
     //SIGNAL ----------------------------------------------------------------------------------------------------------------------------------------
     RooGenericPdf Pdf_theta_sig("Pdf_theta_sig", "Pdf_theta_sig", "(1.5708*(1+ ms3*ms3) + 1.3823*(ms2*ms5+ms7*ms8-ms6*ms9)*t_sig + (1.5708-4.71239*ms3*ms3)*t_sig*t_sig)", RooArgSet(t_sig, ms2,ms3,ms5,ms6,ms7,ms8,ms9));
     RooGenericPdf Pdf_phi_sig("Pdf_phi_sig", "Pdf_phi_sig", "(0.66666667 + 0.345575*ms3*ms9*cos(p_sig)+0.33333333*(-1+2*ms2*ms2+ms3*ms3+2*ms8*ms8+2*ms9*ms9)*cos(2*p_sig)-0.345575*ms3*ms7*sin(p_sig)-0.66666667*(ms2*ms4+ms6*ms8+ms7*ms8)*sin(2*p_sig))", RooArgSet(p_sig, ms2,ms3,ms4,ms6,ms7,ms8,ms9));
-
+    RooGenericPdf Pdf_dN_dOmega_sig("Pdf_dN_dOmega_sig", "Pdf_dN_dOmega_sig", "(0.25*(1+ms3*ms3) +0.25*(1-3*ms3*ms3)*t_sig*t_sig -0.5* ms3* ms6* 2* TMath::Sqrt(1- t_sig*t_sig)* t_sig* cos(p_sig)+0.25*(2*ms2*ms2+ms3*ms3-1)*(1-t_sig*t_sig)*cos(2*p_sig))", RooArgSet(p_sig,t_sig, ms2,ms3,ms6));
     //BACKGROUND ------------------------------------------------------------------------------------------------------------------------------------
     RooGenericPdf Pdf_theta_bkg("Pdf_phi_bkg", "Pdf_phi_bkg", "(1.5708*(1+ mb3*mb3) + 1.3823*(mb2*mb5+mb7*mb8-mb6*mb9)*t_bkg + (1.5708-4.71239*mb3*mb3)*t_bkg*t_bkg)", RooArgSet(t_bkg, mb2,mb3,mb5,mb6,mb7,mb8,mb9));
     RooGenericPdf Pdf_phi_bkg("Pdf_phi_bkg", "Pdf_phi_bkg", "(0.66666667 + 0.345575*mb3*mb9*cos(p_bkg)+0.33333333*(-1+2*mb2*mb2+mb3*mb3+2*mb8*mb8+2*mb9*mb9)*cos(2*p_bkg)-0.345575*mb3*mb7*sin(p_bkg)-0.66666667*(mb2*mb4+mb6*mb8+mb7*mb8)*sin(2*p_bkg))", RooArgSet(p_bkg, mb2,mb3,mb4,mb6,mb7,mb8,mb9));
+    RooGenericPdf Pdf_dN_dOmega_bkg("Pdf_dN_dOmega_bkg", "Pdf_dN_dOmega_bkg", "(0.25*(1+mb3*mb3) +0.25*(1-3*mb3*mb3)*t_bkg*t_bkg -0.5* mb3* mb6* 2* TMath::Sqrt(1- t_bkg*t_bkg)* t_bkg* cos(p_bkg)+0.25*(2*mb2*mb2+mb3*mb3-1)*(1-t_bkg*t_bkg)*cos(2*p_bkg))", RooArgSet(p_bkg,t_bkg, mb2,mb3,mb6));
     //-----------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -127,13 +129,16 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     RooAddPdf sum_bkg("sum_bkg","Pdf_theta_bkg+Pdf_phi_bkg",RooArgList(Pdf_theta_bkg,Pdf_phi_bkg),RooArgList(g1frac_bkg,g2frac_bkg));
 
     RooFitResult *rtot = sum_tot.fitTo(*dataAngl_tot, Save(1));
-    // rtot->Print();
+    //RooFitResult *rtot = Pdf_dN_dOmega_tot.fitTo(*dataAngl_tot, Save());
+    //rtot->Print();
 
     RooFitResult *rsig = sum_sig.fitTo(*dataAngl_sig, Save(1));
-    // rsig->Print();
+    //RooFitResult *rsig = Pdf_dN_dOmega_sig.fitTo(*dataAngl_sig, Save());
+     //rsig->Print();
 
     RooFitResult *rbkg = sum_bkg.fitTo(*dataAngl_bkg, Save(1));
-    // rbkg->Print();
+    //RooFitResult *rbkg = Pdf_dN_dOmega_bkg.fitTo(*dataAngl_bkg, Save());
+     //rbkg->Print();
 
 
     Float_t rho_final[3][3];
@@ -141,7 +146,7 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
 // if(dMatrix == true){
     const RooArgList & fitParams_tot = rtot->floatParsFinal();
     const RooArgList & fitParams_sig = rsig->floatParsFinal();
-    const RooArgList & fitParams_bkg = rbkg ->floatParsFinal();
+    const RooArgList & fitParams_bkg = rbkg->floatParsFinal();
     int size = fitParams_tot.getSize();
     cout<< "size of the paramters is "<< size<< endl;
     Float_t param_tot[size];
@@ -160,45 +165,45 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
   }
     // const char* outfilename = "dmatrix.dat";
     // std::ofstream outfile (outfilename);
-    for(int i = 0 ;i<size; i++)
+    /*for(int i = 0 ;i<size; i++)
     {
       cout << "fit parameters:: "<< param_tot[i] << endl;
-    }
+    }*/
 
 
     // Building the density matrix (with 3 parameters)
     Float_t rho_tot[3][3];
 
-    rho_tot[0][0] = param_tot[3]*param_tot[3];//param_tot[4]*param_tot[4];
+    rho_tot[0][0] = param_tot[2]*param_tot[2];//param_tot[4]*param_tot[4];
     rho_tot[0][1] = 0;
-    rho_tot[0][2] = param_tot[1]*param_tot[3];
+    rho_tot[0][2] = param_tot[1]*param_tot[2];
     rho_tot[1][0] = 0;
     rho_tot[1][1] = param_tot[0]*param_tot[0];
     rho_tot[1][2] = 0;
-    rho_tot[2][0] = param_tot[1]*param_tot[3];
+    rho_tot[2][0] = param_tot[1]*param_tot[2];
     rho_tot[2][1] = 0;
     rho_tot[2][2] = param_tot[1]*param_tot[1];
 
     Float_t rho_bkg[3][3];
-    rho_bkg[0][0] = 1 - param_bkg[3]*param_bkg[3];
+    rho_bkg[0][0] = 1 - param_bkg[2]*param_bkg[2];
     rho_bkg[0][1] = 0;
-    rho_bkg[0][2] = param_bkg[1]*param_bkg[3];
+    rho_bkg[0][2] = -param_bkg[1]*param_bkg[2];
     rho_bkg[1][0] = 0;
     rho_bkg[1][1] = 1 - param_bkg[0]*param_bkg[0];
     rho_bkg[1][2] = 0;
-    rho_bkg[2][0] =  param_bkg[1]*param_bkg[3];
+    rho_bkg[2][0] =  -param_bkg[1]*param_bkg[2];
     rho_bkg[2][1] = 0;
     rho_bkg[2][2] = 1 - param_bkg[1]*param_bkg[1];
 
 
     Float_t rho_sig[3][3];
-    rho_sig[0][0] = param_sig[3]*param_sig[3];
+    rho_sig[0][0] = param_sig[2]*param_sig[2];
     rho_sig[0][1] = 0;
-    rho_sig[0][2] = param_sig[1]*param_sig[3];
+    rho_sig[0][2] = param_sig[1]*param_sig[2];
     rho_sig[1][0] = 0;
     rho_sig[1][1] = param_sig[0]*param_sig[0];
     rho_sig[1][2] = 0;
-    rho_sig[2][0] = param_sig[1]*param_sig[3];
+    rho_sig[2][0] = param_sig[1]*param_sig[2];
     rho_sig[2][1] = 0;
     rho_sig[2][2] = param_sig[1]*param_sig[1];
 
@@ -271,7 +276,7 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
   Float_t m6_ratio = TMath::Sqrt(rho_sig[0][0])/TMath::Sqrt(rho_final[0][0]);
   Float_t m2_ratio = TMath::Sqrt(rho_sig[1][1])/TMath::Sqrt(rho_final[1][1]);
   Float_t m3_ratio = TMath::Sqrt(rho_sig[2][2])/TMath::Sqrt(rho_final[2][2]);
-  std::cout<< "#####################################################"<< m6_ratio<<" ...." <<m2_ratio <<" ...." <<m3_ratio << std::endl;
+  std::cout<< "m6 ratio:-"<< m6_ratio<<" m2 ratio:-" <<m2_ratio <<" m3 ratio:-" <<m3_ratio << std::endl;
 
 
 
@@ -358,14 +363,17 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
 
 
     //Make a plot of the actual angles -- signal + background
-    RooPlot *tframe_tot = t_tot.frame(Title("dN/dCosTheta [signal + bkg] expression pdf"));
+    RooPlot *tframe_tot = t_tot.frame();//Title("dN/dCosTheta [signal + bkg] expression pdf"));
   //RooPlot *tframe_tot = theta.frame(Title("dN/dCosTheta [signal + bkg] expression pdf"));
     dataAngl_tot->plotOn(tframe_tot);
     Pdf_theta_tot.plotOn(tframe_tot);
+    //dNdcosTheta.plotOn(tframe_tot);
+    //tframe_tot->Draw();
+
     //dratio->plotOn(tframe_tot);
 
 
-    RooPlot *pframe_tot = p_tot.frame(Title("dN/dPhi [signal + bkg] expression pdf"));
+    RooPlot *pframe_tot =p_tot.frame(Title("dN/dPhi [signal + bkg] expression pdf"));
     dataAngl_tot->plotOn(pframe_tot);
     Pdf_phi_tot.plotOn(pframe_tot);
 
@@ -379,13 +387,13 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     Pdf_phi_bkg.plotOn(pframe_bkg);
 
     // Make a plot of the data and the pdf overlaid
-    RooPlot *tframe_final = theta.frame(Title("dN/dCosTheta expression pdf"));
-    data1->plotOn(tframe_final);
-    dNdcosTheta.plotOn(tframe_final);
+    RooPlot *tframe_sig = t_sig.frame(Title("dN/dCosTheta signal expression pdf"));
+    dataAngl_sig->plotOn(tframe_sig);
+    Pdf_theta_sig.plotOn(tframe_sig);
 
-    RooPlot *pframe_final = phi.frame(Title("dN/dPhi expression pdf"));
-    data2->plotOn(pframe_final);
-    dndPhi.plotOn(pframe_final);
+    RooPlot *pframe_sig =p_sig.frame(Title("dN/dPhi signal expression pdf"));
+    dataAngl_sig->plotOn(pframe_sig);
+    Pdf_phi_sig.plotOn(pframe_sig);
 
     //std::cout<< "parameter" << mm1 << std::endl;
     // RooPlot *sum_final = sum.frame(Title("dN/dPhi expression pdf"));
@@ -455,14 +463,14 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     //Make a plot of the final angle distributions
     c1->cd(1);
     gPad->SetLeftMargin(0.15);
-    tframe_final->GetYaxis()->SetTitleOffset(1.4);
-    tframe_final->Draw();
+    tframe_sig->GetYaxis()->SetTitleOffset(1.4);
+    tframe_sig->Draw();
 
 
     c1->cd(2);
     gPad->SetLeftMargin(0.15);
-    pframe_final->GetYaxis()->SetTitleOffset(1.4);
-    pframe_final->Draw();
+    pframe_sig->GetYaxis()->SetTitleOffset(1.4);
+    pframe_sig->Draw();
 
     // c1->cd(3);
     // gPad->SetLeftMargin(0.15);
