@@ -23,19 +23,30 @@ public:
 
   // values of m parameters to access.
   Float_t m1;
+  Float_t m1err;
   Float_t m2;
+  Float_t m2err;
   Float_t m3;
+  Float_t m3err;
   Float_t m4;
+  Float_t m4err;
   Float_t m5;
+  Float_t m5err;
   Float_t m6;
+  Float_t m6err;
   Float_t m7;
+  Float_t m7err;
   Float_t m8;
+  Float_t m8err;
   Float_t m9;
+  Float_t m9err;
   Float_t rho[3][3];
   Float_t rho_sig[3][3];
   virtual void runFit(vector <float>costheta , vector <float> phi);
+  virtual void runFitData(RooDataSet* data);
   virtual void rho_calc(Float_t rho_mix[3][3],Float_t rho_bkg[3][3]);
   virtual void Plot();
+
 
 
 private:
@@ -63,6 +74,8 @@ private:
   RooGenericPdf Pdf_phi= {"Pdf_phi", "Pdf_phi", "(0.66666667 + 0.345575*mt3*mt9*cos(p)+0.33333333*(-1+2*mt2*mt2+mt3*mt3+2*mt8*mt8+2*mt9*mt9)*cos(2*p)-0.345575*mt3*mt7*sin(p)-0.66666667*(mt2*mt4+mt6*mt8+mt7*mt8)*sin(2*p))", RooArgSet(p, mt2,mt3,mt4,mt6,mt7,mt8,mt9)};
 
   RooGenericPdf Pdf_dN_dOmega= {"Pdf_dN_dOmega", "Pdf_dN_dOmega", "(0.25*(1+mt3*mt3) +0.25*(1-3*mt3*mt3)*t*t -0.5* mt3* mt6* 2* TMath::Sqrt(1- t*t)* t* cos(p)+0.25*(2*mt2*mt2+mt3*mt3-1)*(1-t*t)*cos(2*p))", RooArgSet(p,t, mt2,mt3,mt6)};
+  //RooGenericPdf Pdf_dN_dOmega= {"Pdf_dN_dOmega", "Pdf_dN_dOmega", "(0.25*(1+mt3*mt3) +0.25*(1-3*mt3*mt3)*t*t -0.5* mt3* TMath::Sqrt(1-mt2*mt2-mt3*mt3)* 2* TMath::Sqrt(1- t*t)* t* cos(p)+0.25*(2*mt2*mt2+mt3*mt3-1)*(1-t*t)*cos(2*p))", RooArgSet(p,t, mt2,mt3)};
+
 
 
 
@@ -96,15 +109,63 @@ void Fitter::runFit(vector <float> costheta, vector <float> phi ){
   m8 = mt8.getVal();
   m9 = mt9.getVal();
 
-  rho[0][0] = mt6.getVal() * mt6.getVal();
+  m1err= mt1.getError();
+  m2err= mt2.getError();
+  m3err= mt3.getError();
+  m4err= mt4.getError();
+  m5err= mt5.getError();
+  m6err= mt6.getError();
+  m7err= mt7.getError();
+  m8err= mt8.getError();
+  m9err= mt9.getError();
+
+
+  rho[0][0] = m6 * m6;
   rho[0][1] = 0;
-  rho[0][2] = mt3.getVal()*mt6.getVal();
+  rho[0][2] = m3*m6;
   rho[1][0] = 0;
-  rho[1][1] = mt2.getVal()*mt2.getVal();
+  rho[1][1] = m2*m2;
   rho[1][2] = 0;
-  rho[2][0] = mt3.getVal()*mt6.getVal();
+  rho[2][0] = m3*m6;
   rho[2][1] = 0;
-  rho[2][2] = mt3.getVal()*mt3.getVal();
+  rho[2][2] = m3*m3;
+
+}
+
+void Fitter::runFitData(RooDataSet*data ){
+
+  RooFitResult *rtot = Pdf_dN_dOmega.fitTo(*data);
+
+  m1 = mt1.getVal();
+  m2 = mt2.getVal();
+  m3 = mt3.getVal();
+  m4 = mt4.getVal();
+  m5 = mt5.getVal();
+  m6 = mt6.getVal();
+  m7 = mt7.getVal();
+  m8 = mt8.getVal();
+  m9 = mt9.getVal();
+
+  m1err= mt1.getError();
+  m2err= mt2.getError();
+  m3err= mt3.getError();
+  m4err= mt4.getError();
+  m5err= mt5.getError();
+  m6err= mt6.getError();
+  m7err= mt7.getError();
+  m8err= mt8.getError();
+  m9err= mt9.getError();
+
+
+  rho[0][0] = m6 * m6;
+  rho[0][1] = 0;
+  rho[0][2] = m3*m6;
+  rho[1][0] = 0;
+  rho[1][1] = m2*m2;
+  rho[1][2] = 0;
+  rho[2][0] = m3*m6;
+  rho[2][1] = 0;
+  rho[2][2] = m3*m3;
 
 }
 
@@ -116,8 +177,8 @@ void Fitter::rho_calc(Float_t rho_mix[3][3],Float_t rho_bkg[3][3]){
   for(int i = 0; i < rows; ++i){
               for(int j = 0; j < cols; ++j)
               {
-                  rho_mix[i][j]=0;
-                  rho_bkg[i][j]=0;
+                  rho_sig[i][j]=0;
+                  //rho_bkg[i][j]=0;
               }
           }
 
@@ -127,16 +188,24 @@ void Fitter::rho_calc(Float_t rho_mix[3][3],Float_t rho_bkg[3][3]){
                   // std::cout<<"rho_tot["<<i<<"]["<<j<<"] ="<<rho_tot[i][j]<<std::endl;
                   for(int k = 0; k < cols; ++k)
                   {
-                      int Factor = 0;
+                      int Factor = 0;RooRealVar mt3= {"mt3", "mt3",0.4 -1,1};
+
+  RooRealVar mt6= {"mt6", "mt6",0.5,-1.0,1.};
+
                       if (i==k){
                         Factor = 1;
                       }
+
                       rho_sig[i][j] += (1* Factor - rho_bkg[i][k]) * rho_mix[k][j];
 
                   }
-                  //std::cout<<i<<"--"<<j<<"--"<<rho_final[i][j]<<"------------ "<< rho_sig[i][j]<<std::endl;
+                  std::cout<<i<<"--"<<j<<"--"<<rho_sig[i][j]<<std::endl;
+                  //std::cout<<i<<"--"<<j<<"--"<<rho_sig[i][j]<<std::endl;
 
-              }
+              }RooRealVar mt3= {"mt3", "mt3",0.4 -1,1};
+
+  RooRealVar mt6= {"mt6", "mt6",0.5,-1.0,1.};
+
 
           }
 

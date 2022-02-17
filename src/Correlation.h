@@ -82,21 +82,21 @@ void Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
 
 
 
-  TVector3 q1(px1,py1,pz1);
-  TVector3 q2(px2,py2,pz2);
-  Float_t mp1 = q1.Mag();
-  Float_t mp2 = q2.Mag();
+  //TVector3 q1(px1,py1,pz1);
+  //TVector3 q2(px2,py2,pz2);
+  //Float_t mp1 = q1.Mag();
+  //Float_t mp2 = q2.Mag();
 
 
 
-  Float_t P1 = TMath::Sqrt(px1*(px1) + py1*(py1) + pz1*(pz1));
-  Float_t P2 = TMath::Sqrt(px2*(px2) + py2*(py2) + pz2*(pz2));
+  //Float_t P1 = TMath::Sqrt(px1*(px1) + py1*(py1) + pz1*(pz1));
+  //Float_t P2 = TMath::Sqrt(px2*(px2) + py2*(py2) + pz2*(pz2));
 
-  Double_t muonE1 = TMath::Sqrt(mmuon*mmuon+ P1*P1);
-  Double_t muonE2 = TMath::Sqrt(mmuon*mmuon + P2*P2);
+  //Double_t muonE1 = TMath::Sqrt(mmuon*mmuon+ P1*P1);
+  //Double_t muonE2 = TMath::Sqrt(mmuon*mmuon + P2*P2);
 
-  v4.SetPxPyPzE(px1,py1,pz1,muonE1);
-  v5.SetPxPyPzE(px2,py2,pz2,muonE2);
+  //v4.SetPxPyPzE(px1,py1,pz1,muonE1);
+  //v5.SetPxPyPzE(px2,py2,pz2,muonE2);
   //cout<< px2<< py2 << pz2 << muonE2<< endl;
 
    MuPt1 = v4.Pt();
