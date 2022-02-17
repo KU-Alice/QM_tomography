@@ -144,7 +144,7 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     Float_t rho_final[3][3];
 // if dMatrix==True --> print desnity matrix in file
 // if(dMatrix == true){
-    const RooArgList & fitParams_tot = rtot->floatParsFinal();
+/*    const RooArgList & fitParams_tot = rtot->floatParsFinal();
     const RooArgList & fitParams_sig = rsig->floatParsFinal();
     const RooArgList & fitParams_bkg = rbkg->floatParsFinal();
     int size = fitParams_tot.getSize();
@@ -162,7 +162,8 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     param_tot[i] = fitPar_tot.getVal();
     param_sig[i] = fitPar_sig.getVal();
     param_bkg[i] = fitPar_bkg.getVal();
-  }
+  }*/
+
     // const char* outfilename = "dmatrix.dat";
     // std::ofstream outfile (outfilename);
     /*for(int i = 0 ;i<size; i++)
@@ -174,41 +175,41 @@ void totFit(const char* infilename_tot = "ang_tot.txt", const char* infilename_s
     // Building the density matrix (with 3 parameters)
     Float_t rho_tot[3][3];
 
-    rho_tot[0][0] = param_tot[2]*param_tot[2];//param_tot[4]*param_tot[4];
+    rho_tot[0][0] = mt6.getVal() * mt6.getVal();//param_tot[2]*param_tot[2];//param_tot[4]*param_tot[4];
     rho_tot[0][1] = 0;
-    rho_tot[0][2] = param_tot[1]*param_tot[2];
+    rho_tot[0][2] = mt3.getVal()*mt6.getVal();//param_tot[1]*param_tot[2];
     rho_tot[1][0] = 0;
-    rho_tot[1][1] = param_tot[0]*param_tot[0];
+    rho_tot[1][1] = mt2.getVal()*mt2.getVal();//param_tot[0]*param_tot[0];
     rho_tot[1][2] = 0;
-    rho_tot[2][0] = param_tot[1]*param_tot[2];
+    rho_tot[2][0] = mt3.getVal()*mt6.getVal();//param_tot[1]*param_tot[2];
     rho_tot[2][1] = 0;
-    rho_tot[2][2] = param_tot[1]*param_tot[1];
+    rho_tot[2][2] = mt3.getVal()*mt3.getVal();//param_tot[1]*param_tot[1];
 
     Float_t rho_bkg[3][3];
-    rho_bkg[0][0] = 1 - param_bkg[2]*param_bkg[2];
+    rho_bkg[0][0] = 1 - mb6.getVal()*mb6.getVal();//param_bkg[2]*param_bkg[2];
     rho_bkg[0][1] = 0;
-    rho_bkg[0][2] = -param_bkg[1]*param_bkg[2];
+    rho_bkg[0][2] =  mb3.getVal()*mb6.getVal();//param_bkg[1]*param_bkg[2];
     rho_bkg[1][0] = 0;
-    rho_bkg[1][1] = 1 - param_bkg[0]*param_bkg[0];
+    rho_bkg[1][1] = 1 -  mb2.getVal()*mb2.getVal();//param_bkg[0]*param_bkg[0];
     rho_bkg[1][2] = 0;
-    rho_bkg[2][0] =  -param_bkg[1]*param_bkg[2];
+    rho_bkg[2][0] =   mb3.getVal()*mb6.getVal();//param_bkg[1]*param_bkg[2];
     rho_bkg[2][1] = 0;
-    rho_bkg[2][2] = 1 - param_bkg[1]*param_bkg[1];
+    rho_bkg[2][2] = 1 -  mb3.getVal()*mb3.getVal();//param_bkg[1]*param_bkg[1];
 
 
     Float_t rho_sig[3][3];
-    rho_sig[0][0] = param_sig[2]*param_sig[2];
+    rho_sig[0][0] =  ms6.getVal()*ms6.getVal();//param_sig[2]*param_sig[2];
     rho_sig[0][1] = 0;
-    rho_sig[0][2] = param_sig[1]*param_sig[2];
+    rho_sig[0][2] = ms3.getVal()*ms6.getVal();//param_sig[1]*param_sig[2];
     rho_sig[1][0] = 0;
-    rho_sig[1][1] = param_sig[0]*param_sig[0];
+    rho_sig[1][1] = ms3.getVal()*ms3.getVal();//param_sig[0]*param_sig[0];
     rho_sig[1][2] = 0;
-    rho_sig[2][0] = param_sig[1]*param_sig[2];
+    rho_sig[2][0] = ms3.getVal()*ms6.getVal();//param_sig[1]*param_sig[2];
     rho_sig[2][1] = 0;
-    rho_sig[2][2] = param_sig[1]*param_sig[1];
+    rho_sig[2][2] = ms2.getVal()*ms2.getVal();//param_sig[1]*param_sig[1];
 
-    int rows =  sizeof(rho_tot) / sizeof(rho_tot[0]);
-    int cols = sizeof(rho_tot[0]) / sizeof(rho_tot[0][0]);
+    int rows = 3; //sizeof(rho_tot) / sizeof(rho_tot[0]);
+    int cols = 3; //sizeof(rho_tot[0]) / sizeof(rho_tot[0][0]);
 
 
     // if (outfile.is_open()){
