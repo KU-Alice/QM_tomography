@@ -1,9 +1,9 @@
 #ifndef Correlation_h
 #define Correlation_h
 
-#include "RooRealVar.h"
-#include "RooDataSet.h"
-#include "RooArgSet.h"
+//#include "RooRealVar.h"/
+//#include "RooDataSet.h"
+//#include "RooArgSet.h"
 class Correlation{
 
 // tree branches
@@ -20,8 +20,14 @@ public:
   //RooRealVar phi();
   //RooDataSet* data ;//  RooDataSet d("d","d",RooArgSet(x,y,c)) ;
   vector <float> costheta;
+  vector <float> etagen;
+  //vector <float> eta2;
+
+
+  vector <float> costhetahelicity;
   vector <float> phi;
   vector <float> DiMuMass;
+  vector <float> DiMuMassGen;
   vector <float> DiMuPT;
 
   TLorentzVector d1;
@@ -30,7 +36,13 @@ public:
 
 
   void ReadFile(TString inFileName);
+  virtual void ReadTree(TString inFileNameRoot,bool isMC, bool isgen);
+  virtual void ReadTreeGen(TString inFileNameRoot);
   virtual void SaveTree(const char* rootfile);
+  virtual void Plot1D(vector <float> item,TString title , TString option,TString canvasname ="canvas");
+  virtual void Plot2D(vector <float> item1,vector <float> item2);
+  Double_t CosThetaHelicityFrame( TLorentzVector muonPositive,TLorentzVector muonNegative, TLorentzVector possibleJPsi);
+  vector <float> AngleCalculator(TLorentzVector v1, TLorentzVector v2);
 
   //TFile *myFile;
   //TTree *myTree;
@@ -40,12 +52,13 @@ private:
   Float_t mp=0.93827231; // not used
   Float_t mmuon=0.105658; //mass of muon
   Float_t pbeam=TMath::Sqrt(ebeam*ebeam + mp*mp);
-  void AngleCalculator(TLorentzVector v1, TLorentzVector v2);
+  //virtual void AngleCalculator(TLorentzVector v1, TLorentzVector v2);
 
 
+
+  Float_t MuPt1;
   Float_t DiMuM;
   Float_t DiMuPt;
-  Float_t MuPt1;
   Float_t MuPt2;
   Float_t DiMuY;
   Float_t cosThetaCS;
@@ -54,22 +67,30 @@ private:
   Float_t accoplCut;
   Float_t Phi;
   Float_t Theta;
+
+  //vector <float> cosThetaCSlist;
+  vector <float> SinThetaCosPhiCSlist;
+  vector <float> SinThetaSinPhiCSlist;
+  vector <float> accoplCutlist;
+  vector <float> diMuPtList;
+  vector <float> diMuYList;
   //RooRealVar cost = {"cost","costheta", -1,1};
   //RooRealVar ph = {"ph","phi", 2*3.141616};
 
 };
 #endif
 
-
-void Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
+//void Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
+vector <float> Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
 
 {
 
   //TLorentzVector v4;
   //TLorentzVector v5;
-  TLorentzVector pa(1.,0.,0,1); // projectile
-  TLorentzVector pb(1.,0., 0,-1); // target
-
+  //TLorentzVector pa(1.,0.,0,1); // projectile
+  //TLorentzVector pb(1.,0., 0,-1); // target
+  TLorentzVector pa(0.,0.,-1.,1.); // projectile
+  TLorentzVector pb(0.,0., 1.,1); // target
   Float_t px1 = v4.Px();
   Float_t py1 = v4.Py();
   Float_t pz1 = v4.Pz();
@@ -249,8 +270,8 @@ void Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
 
 
   float phi   = atan2(SinThetaSinPhiCS,SinThetaCosPhiCS);
-  if (phi>=0) phi = phi;
-  if (phi<0) phi = phi + 2*TMath::Pi();
+  if (phi>=0) {phi = phi;}
+  if (phi<0) {phi = phi + 2*TMath::Pi();}
 
   //Make an ASCII fi  le as output
 
@@ -263,7 +284,10 @@ void Correlation::AngleCalculator(TLorentzVector v4, TLorentzVector v5)
   }
   Phi = phi; //for tree
   Theta = TMath::ACos(cosThetaCS);
-
+  vector <float> angle_store;
+  angle_store.push_back(cosThetaCS);
+  angle_store.push_back(phi);
+  return angle_store;
 
 }
 
@@ -300,11 +324,17 @@ void Correlation::ReadFile(TString inFileName = "file.dat"){
     d1.SetPxPyPzE(px1,py1,pz1,e1);
     d2.SetPxPyPzE(px2,py2,pz2,e2);
     p = d1 +d2;
-    AngleCalculator(d1,d2);
+    //AngleCalculator(d1,d2);
+    //AngleCalculator(d1,d2);
 
     //if(DiMuM>mass_min && DiMuM<mass_max && DiMuPt>Pt_min && DiMuPt>Pt_max ){
     costheta.push_back(cosThetaCS);
-    phi.push_back(Phi);
+
+    float newPhi = Phi;//-(TMath::Pi()/4);
+    /*if (newPhi<=0){
+      newPhi = 2*TMath::Pi()+newPhi;
+    }*/
+    phi.push_back(newPhi);
 
     DiMuMass.push_back(DiMuM);
     DiMuPT.push_back(DiMuPt);
@@ -313,10 +343,303 @@ void Correlation::ReadFile(TString inFileName = "file.dat"){
   }
 }
 
+void Correlation::ReadTree(TString inFileNameRoot,bool isMC =0,bool isgen =0){
+  TFile* file = TFile::Open(inFileNameRoot);
+  TTree* tree;
+  if (isMC){
+
+   if(isgen){
+     cout <<"is mc gen"<<endl;
+     tree = (TTree*) file->Get("AnalysisOutput/fTreeJPsiMCGen");
+   }
+
+
+   else {
+     cout <<"is mc rec"<<endl;
+     tree = (TTree*) file->Get("AnalysisOutput/fTreeJPsiMCRec");}
+
+  }
+  else{
+
+      cout <<"is data"<<endl;
+      tree = (TTree*) file->Get("AnalysisOutput/fTreeJPsi");
+  }
+
+  //tree->Print();
+  int entries = tree->GetEntries();
+  double fM;
+  double fPt;
+  double fY;
+  double fPt1;
+  double fEta1;
+  double fPhi1;
+  double fPt2;
+  double fEta2;
+  double fPhi2;
+  double fQ1;
+  double fQ2;
+  double fTrk1SigIfMu;
+  double fTrk2SigIfMu;
+  double fTrk1SigIfEl;
+  double fTrk2SigIfEl;
+  int fV0A_dec;
+  int fV0C_dec;
+  int fADA_dec;
+  int fADC_dec;
+  bool fMatchingSPD;
+  int fRunNumber;
+
+  double fQ1Gen;
+  double fQ2Gen;
+
+
+  double fMGen;
+  double fPtGen;
+  double fYGen;
+  double fPt1Gen;
+  double fEta1Gen;
+  double fPhi1Gen;
+  double fPt2Gen;
+  double fEta2Gen;
+  double fPhi2Gen;
+
+
+
+    if (isMC){
+
+    if(isgen){
+
+
+        tree->SetBranchAddress("fMGen",&fMGen);
+        tree->SetBranchAddress("fPtGen",&fPtGen);
+        tree->SetBranchAddress("fYGen",&fYGen);
+        tree->SetBranchAddress("fPt2Gen",&fPt2Gen);
+        tree->SetBranchAddress("fEta2Gen",&fEta2Gen);
+        tree->SetBranchAddress("fPhi2Gen",&fPhi2Gen);
+        tree->SetBranchAddress("fPt1Gen",&fPt1Gen);
+        tree->SetBranchAddress("fEta1Gen",&fEta1Gen);
+        tree->SetBranchAddress("fPhi1Gen",&fPhi1Gen);
+        tree->SetBranchAddress("fQ1Gen",&fQ1Gen);
+        tree->SetBranchAddress("fQ2Gen",&fQ2Gen);
+
+
+
+
+          }
+      else{
+
+          tree->SetBranchAddress("fMGen",&fMGen);
+          tree->SetBranchAddress("fPtGen",&fPtGen);
+
+          tree->SetBranchAddress("fM",&fM);
+          tree->SetBranchAddress("fPt",&fPt);
+          tree->SetBranchAddress("fY",&fY);
+          tree->SetBranchAddress("fPt2",&fPt2);
+          tree->SetBranchAddress("fEta2",&fEta2);
+          tree->SetBranchAddress("fPhi2",&fPhi2);
+          tree->SetBranchAddress("fPt1",&fPt1);
+          tree->SetBranchAddress("fEta1",&fEta1);
+          tree->SetBranchAddress("fPhi1",&fPhi1);
+          tree->SetBranchAddress("fRunNumber",&fRunNumber);
+          tree->SetBranchAddress("fTrk1SigIfMu",&fTrk1SigIfMu);
+          tree->SetBranchAddress("fTrk2SigIfMu",&fTrk2SigIfMu);
+          tree->SetBranchAddress("fTrk1SigIfEl",&fTrk1SigIfEl);
+          tree->SetBranchAddress("fTrk2SigIfEl",&fTrk2SigIfEl);
+          tree->SetBranchAddress("fV0A_dec",&fV0A_dec);
+          tree->SetBranchAddress("fV0C_dec",&fV0C_dec);
+          tree->SetBranchAddress("fADA_dec",&fADA_dec);
+          tree->SetBranchAddress("fADC_dec",&fADC_dec);
+          tree->SetBranchAddress("fMatchingSPD",&fMatchingSPD);
+
+          tree->SetBranchAddress("fQ1",&fQ1);
+          tree->SetBranchAddress("fQ2",&fQ2);
+
+      }
+
+    }
+    else{
+
+
+    tree->SetBranchAddress("fM",&fM);
+    tree->SetBranchAddress("fPt",&fPt);
+    tree->SetBranchAddress("fY",&fY);
+    tree->SetBranchAddress("fPt2",&fPt2);
+    tree->SetBranchAddress("fEta2",&fEta2);
+    tree->SetBranchAddress("fPhi2",&fPhi2);
+    tree->SetBranchAddress("fPt1",&fPt1);
+    tree->SetBranchAddress("fEta1",&fEta1);
+    tree->SetBranchAddress("fPhi1",&fPhi1);
+    tree->SetBranchAddress("fRunNumber",&fRunNumber);
+    tree->SetBranchAddress("fTrk1SigIfMu",&fTrk1SigIfMu);
+    tree->SetBranchAddress("fTrk2SigIfMu",&fTrk2SigIfMu);
+    tree->SetBranchAddress("fTrk1SigIfEl",&fTrk1SigIfEl);
+    tree->SetBranchAddress("fTrk2SigIfEl",&fTrk2SigIfEl);
+    tree->SetBranchAddress("fV0A_dec",&fV0A_dec);
+    tree->SetBranchAddress("fV0C_dec",&fV0C_dec);
+    tree->SetBranchAddress("fADA_dec",&fADA_dec);
+    tree->SetBranchAddress("fADC_dec",&fADC_dec);
+    tree->SetBranchAddress("fMatchingSPD",&fMatchingSPD);
+    tree->SetBranchAddress("fQ1",&fQ1);
+    tree->SetBranchAddress("fQ2",&fQ2);
+      }
+
+
+
+
+
+
+  //tree->Print();
+  //cout << "entries are"<< tree->GetEntries()<<endl;
+  for(int i =0; i<entries ; i++){
+    tree->GetEntry(i);
+
+
+
+
+    //if (fPt<0.15) continue;
+
+
+      // cuts are defined here ###
+      if(isgen){
+        if ((fPtGen<0.2)) continue;
+        if ((fPtGen>1)) continue;
+      //  if (TMath::Abs(fEta1Gen)>3) continue;
+      //  if (TMath::Abs(fEta2Gen>3)) continue;
+      }
+
+
+      else{
+
+      if (fMatchingSPD==0) continue;
+
+      if (fADA_dec!=0) continue;
+      if (fADC_dec!=0) continue;
+      if (fV0A_dec!=0) continue;
+      if (fV0C_dec!=0) continue;
+
+      if ((fPt<0.2)) continue;
+      if ((fPt>1)) continue;
+
+      if ((TMath::Abs(fEta1))>0.8) continue;
+      if ((TMath::Abs(fEta2))>0.8) continue;
+      if ((TMath::Abs(fY)>0.8)) continue;
+      if (fQ1*fQ2>=0) continue;
+
+     //if ((fTrk1SigIfMu)>4) continue;
+     //if ((fTrk2SigIfMu)>4) continue;
+     //if(fTrk1SigIfEl<2) continue;
+     //if(fTrk2SigIfEl<2) continue;
+
+
+    if (TMath::Sqrt(fTrk1SigIfMu * fTrk1SigIfMu + fTrk2SigIfMu *fTrk2SigIfMu) > TMath::Sqrt(fTrk1SigIfEl * fTrk1SigIfEl + fTrk2SigIfEl *fTrk2SigIfEl)) continue;
+
+    }
+
+
+
+    DiMuMass.push_back(fM);
+
+
+    DiMuMassGen.push_back(fMGen);
+
+
+
+
+
+    TLorentzVector dneg;
+    TLorentzVector dpos;
+    //TLorentzVector d1;
+    //TLorentzVector d2;
+    if (isgen){
+      d1.SetPtEtaPhiM(fPt1Gen,fEta1Gen,fPhi1Gen,mmuon);
+      d2.SetPtEtaPhiM(fPt2Gen,fEta2Gen,fPhi2Gen,mmuon);
+      if (fQ1Gen<0){
+        dneg.SetPtEtaPhiM(fPt1Gen,fEta1Gen,fPhi1Gen,mmuon);
+        dpos.SetPtEtaPhiM(fPt2Gen,fEta2Gen,fPhi2Gen,mmuon);
+      }
+    }
+     else{
+       d1.SetPtEtaPhiM(fPt1,fEta1,fPhi1,mmuon);
+       d2.SetPtEtaPhiM(fPt2,fEta2,fPhi2,mmuon);
+       if (fQ1<0){
+         dneg.SetPtEtaPhiM(fPt1,fEta1,fPhi1,mmuon);
+         dpos.SetPtEtaPhiM(fPt2,fEta2,fPhi2,mmuon);
+
+       }
+
+      else{
+        dpos.SetPtEtaPhiM(fPt1,fEta1,fPhi1,mmuon);
+        dneg.SetPtEtaPhiM(fPt2,fEta2,fPhi2,mmuon);
+
+       }
+
+    }
+    /*else{
+      d1.SetPtEtaPhiM(fPt1,fEta1,fPhi1,mmuon);
+      d2.SetPtEtaPhiM(fPt2,fEta2,fPhi2,mmuon);
+    }*/
+
+    p = d1 +d2;
+    TLorentzVector parent_for_helicity = dpos+dneg;
+    AngleCalculator(d1,d2);
+    //AngleCalculator(dneg,dpos);
+
+    costhetahelicity.push_back(CosThetaHelicityFrame( dpos,dneg,parent_for_helicity));
+    //if(DiMuM>mass_min && DiMuM<mass_max && DiMuPt>Pt_min && DiMuPt>Pt_max ){
+
+
+    costheta.push_back(cosThetaCS);
+    phi.push_back(Phi);
+    accoplCutlist.push_back(accoplCut);
+    SinThetaSinPhiCSlist.push_back(SinThetaSinPhiCS);
+    SinThetaCosPhiCSlist.push_back(SinThetaCosPhiCS);
+    diMuPtList.push_back(p.Pt());
+    diMuYList.push_back(p.Y());
+    //etagen.push_back(fEta1Gen);
+    //etagen.push_back(fEta2Gen);
+
+  }
+
+}
+
+void Correlation::Plot1D(vector <float> item,TString title ="; ; Events" , TString option ="",TString canvasname ="canvas"){
+
+  float max = *max_element(item.begin(),item.end());
+  float min = *min_element(item.begin(),item.end());
+  float bin = item.size()/10;
+  TH1F* histo = new TH1F("histo",title.Data(),bin,min,max);
+  for(int i=0 ; i< item.size();i++){
+
+    histo->Fill(item[i]);
+  }
+  TCanvas* canvas = new TCanvas(canvasname.Data(), "",600,600);
+  canvas->cd();
+  histo->Draw(option.Data());
+}
+
+void Correlation::Plot2D(vector <float> item1,vector <float> item2 ){
+
+  float max1 = *max_element(item1.begin(),item1.end());
+  float min1 = *min_element(item1.begin(),item1.end());
+
+  float max2 = *max_element(item2.begin(),item2.end());
+  float min2 = *min_element(item2.begin(),item2.end());
+  //float bin1 = item1.size()/1000;
+  //float bin2 = item2.size()/1000;
+  TH2F* histo = new TH2F("histo","; ; Events ",100,min2,max2,100,min2,max2);
+  for(int i=0 ; i< item1.size();i++){
+
+    histo->Fill(item1[i],item2[i]);
+  }
+  TCanvas* canvas = new TCanvas("canvas", "",600,600);
+  canvas->cd();
+  histo->Draw("SURF");
+}
+
 
 void Correlation::SaveTree(const char* rootfile = "myTree.root"){
 
-
+cout <<"root file name is " << rootfile<< endl;
 TFile*  myFile = new TFile(rootfile,"RECREATE");
 TTree*  myTree = new TTree("MyTree", "MyTree");
 
@@ -329,6 +652,158 @@ myTree->Branch("AccoplAngle", &accoplCut);
 myTree->Branch("CosTheta", &cosThetaCS);
 myTree->Branch("SinThetaCosPhi", &SinThetaCosPhiCS);
 myTree->Branch("SinThetaSinPhi", &SinThetaSinPhiCS);
-myTree->Branch("Phi", &Phi);
-myTree->Branch("Theta", &Theta);
+
+//myTree->Branch("Phi", &Phi);
+//myTree->Branch("Theta", &Theta);
+
+for (int i =0 ; i<DiMuMass.size();i++){
+
+  MuPt1 = d1.Pt();
+  MuPt1 = d2.Pt();
+  DiMuM = DiMuMass[i];
+  DiMuPt = diMuPtList[i];
+  DiMuY = diMuYList[i];
+  accoplCut = accoplCutlist[i];
+  cosThetaCS =  costheta[i];
+  SinThetaCosPhiCS = SinThetaCosPhiCSlist[i];
+  SinThetaSinPhiCS = SinThetaSinPhiCSlist[i];
+  myTree->Fill();
 }
+myFile->Write();
+myFile->Close();
+
+}
+
+
+Double_t Correlation::CosThetaHelicityFrame( TLorentzVector muonPositive,
+                                                             TLorentzVector muonNegative,
+                                                             TLorentzVector possibleJPsi )
+  {
+    /* - This function computes the Helicity cos(theta) for the
+       - helicity of the J/Psi.
+       - The idea should be to get back to a reference frame where it
+       - is easier to compute and to define the proper z-axis.
+       -
+     */
+
+    /* - Half of the energy per pair of the colliding nucleons.
+       -
+     */
+    Double_t HalfSqrtSnn   = 2510.;
+    Double_t MassOfLead208 = 193.6823;
+    Double_t MomentumBeam  = TMath::Sqrt( HalfSqrtSnn*HalfSqrtSnn*208*208 - MassOfLead208*MassOfLead208 );
+    /* - Fill the Lorentz vector for projectile and target.
+       - For the moment we do not consider the crossing angle.
+       - Projectile runs towards the MUON arm.
+       -
+     */
+    TLorentzVector pProjCM(0.,0., -MomentumBeam, HalfSqrtSnn*208); // projectile
+    TLorentzVector pTargCM(0.,0.,  MomentumBeam, HalfSqrtSnn*208); // target
+    /* - Translate the dimuon parameters in the dimuon rest frame
+       -
+     */
+    TVector3       beta      = ( -1./possibleJPsi.E() ) * possibleJPsi.Vect();
+    TLorentzVector pMu1Dimu  = muonPositive;
+    TLorentzVector pMu2Dimu  = muonNegative;
+    TLorentzVector pProjDimu = pProjCM;
+    TLorentzVector pTargDimu = pTargCM;
+    pMu1Dimu.Boost(beta);
+    pMu2Dimu.Boost(beta);
+    pProjDimu.Boost(beta);
+    pTargDimu.Boost(beta);
+    //
+    // --- Determine the z axis for the calculation of the polarization angle
+    // (i.e. the direction of the dimuon in the CM system)
+    //
+    TVector3 zaxis = (possibleJPsi.Vect()).Unit();
+    /* - Determine the He angle (angle between mu+ and the z axis defined above)
+       -
+     */
+    Double_t CosThetaHE = zaxis.Dot((pMu1Dimu.Vect()).Unit());
+    return   CosThetaHE;
+
+  }
+
+
+void Correlation::ReadTreeGen(TString inFileNameRoot){
+  TFile* file = TFile::Open(inFileNameRoot);
+  TTree* tree;
+  //return;
+  cout <<"is mc gen"<<endl;
+  tree = (TTree*) file->Get("AnalysisOutput/fTreeJPsiMCGen");
+  //tree->Print();
+  //break;
+
+  //tree->Print();
+  int entries = tree->GetEntries();
+  double fQ1Gen;
+  double fQ2Gen;
+  double fMGen;
+  double fPtGen;
+  double fYGen;
+  double fPt1Gen;
+  double fEta1Gen;
+  double fPhi1Gen;
+  double fPt2Gen;
+  double fEta2Gen;
+  double fPhi2Gen;
+
+  tree->SetBranchAddress("fMGen",&fMGen);
+  tree->SetBranchAddress("fPtGen",&fPtGen);
+  tree->SetBranchAddress("fYGen",&fYGen);
+  tree->SetBranchAddress("fPt2Gen",&fPt2Gen);
+  tree->SetBranchAddress("fEta2Gen",&fEta2Gen);
+  tree->SetBranchAddress("fPhi2Gen",&fPhi2Gen);
+  tree->SetBranchAddress("fPt1Gen",&fPt1Gen);
+  tree->SetBranchAddress("fEta1Gen",&fEta1Gen);
+  tree->SetBranchAddress("fPhi1Gen",&fPhi1Gen);
+  tree->SetBranchAddress("fQ1Gen",&fQ1Gen);
+  tree->SetBranchAddress("fQ2Gen",&fQ2Gen);
+
+  for(int i =0; i<entries ; i++){
+    tree->GetEntry(i);
+
+
+
+
+    //if (fPt<0.15) continue;
+
+
+        // cuts are defined here ###
+  if ((fPtGen<0.2)) continue;
+  if ((fPtGen>1)) continue;
+  //if (TMath::Abs(fEta1Gen)>3) continue;
+  //if (TMath::Abs(fEta2Gen)>3) continue;
+  DiMuMassGen.push_back(fMGen);
+
+
+
+
+
+  TLorentzVector dneg;
+  TLorentzVector dpos;
+   //TLorentzVector d1;
+   //TLorentzVector d2;
+  d1.SetPtEtaPhiM(fPt1Gen,fEta1Gen,fPhi1Gen,mmuon);
+  d2.SetPtEtaPhiM(fPt2Gen,fEta2Gen,fPhi2Gen,mmuon);
+  if (fQ1Gen<0){
+    dneg.SetPtEtaPhiM(fPt1Gen,fEta1Gen,fPhi1Gen,mmuon);
+    dpos.SetPtEtaPhiM(fPt2Gen,fEta2Gen,fPhi2Gen,mmuon);
+    }
+
+  p = d1 +d2;
+  TLorentzVector parent_for_helicity = dpos+dneg;
+  vector <float> calc_angle= AngleCalculator(d1,d2);
+  //AngleCalculator(dneg,dpos);
+  costhetahelicity.push_back(CosThetaHelicityFrame( dpos,dneg,parent_for_helicity));
+    //if(DiMuM>mass_min && DiMuM<mass_max && DiMuPt>Pt_min && DiMuPt>Pt_max ){
+    costheta.push_back(cosThetaCS);
+    phi.push_back(Phi);
+    accoplCutlist.push_back(accoplCut);
+    SinThetaSinPhiCSlist.push_back(SinThetaSinPhiCS);
+    SinThetaCosPhiCSlist.push_back(SinThetaCosPhiCS);
+    diMuPtList.push_back(p.Pt());
+    diMuYList.push_back(p.Y());
+    }
+
+  }
