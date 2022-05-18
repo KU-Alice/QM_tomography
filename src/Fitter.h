@@ -54,14 +54,11 @@ public:
   virtual void rho_calc(Float_t rho_mix[3][3],Float_t rho_bkg[3][3]);
 
   virtual void Plot();
-  virtual void traditional_fit(vector <float> mass,vector <float> mass_mc,vector <float> angle,vector <float> angle_mc ,float ang_min,float ang_max,int ncanvas);
+  virtual void traditional_fit(vector <float> mass,vector <float> mass_mc,vector <float> angle,vector <float> angle_mc ,float ang_min,float ang_max);
   vector <float> GetParametersPdf();
 
 
-  void FitJPsiMass(Int_t iPoint = -1,Float_t maxPt = 0.2, Float_t minPt = 0.0,
-  		Float_t minPhi = 0.0, Float_t maxPhi =  6.29,
-  		Float_t minCsT = -1.0, Float_t maxCsT =  1.0,
-  		Int_t nBins = 116, Float_t fitMin = 2.5, Float_t fitMax = 4.5);
+
 
   void setmassthetaphilist(vector <float> mass, vector <float> costheta,vector <float> phi ){
     rmass = mass;
@@ -75,6 +72,13 @@ public:
     rmccostheta = mccostheta;
     rmcphi = mcphi;
   }
+
+  void FitJPsiMass(Int_t iPoint = -1,Float_t maxPt = 0.2, Float_t minPt = 0.0,
+  		Float_t minPhi = 0.0, Float_t maxPhi =  6.29,
+  		Float_t minCsT = -1.0, Float_t maxCsT =  1.0,
+  		Int_t nBins = 116, Float_t fitMin = 2.5, Float_t fitMax = 4.5,int type =2);
+
+
 
   //TF1 setsignalfunction(TF1 myfunc) {return mysigfunc};
   //TF1 setbkgfucntion(TF1 mybkgfunc){ return mybkgfunc};
@@ -307,7 +311,7 @@ void Fitter::rho_calc(Float_t rho_mix[3][3],Float_t rho_bkg[3][3]){
 
 
 
-void Fitter::traditional_fit(vector <float> mass,vector <float> mass_mc,vector <float> angle,vector <float> angle_mc ,float ang_min,float ang_max,int ncanvas){
+void Fitter::traditional_fit(vector <float> mass,vector <float> mass_mc,vector <float> angle,vector <float> angle_mc ,float ang_min,float ang_max){
 
 
 
@@ -490,67 +494,57 @@ vector <float> Fitter::GetParametersPdf(){
 
 }
 
+
 void Fitter::FitJPsiMass(Int_t iPoint = -1,Float_t maxPt = 0.2, Float_t minPt = 0.0,
 		Float_t minPhi = 0.0, Float_t maxPhi =  6.29,
 		Float_t minCsT = -1.0, Float_t maxCsT =  1.0,
-		Int_t nBins = 116, Float_t fitMin = 2.5, Float_t fitMax = 4.5) {
+		Int_t nBins = 116, Float_t fitMin = 2.5, Float_t fitMax = 4.5,int type =2) {
 
 
 
     UInt_t nDT = rmass.size();
-cout << nDT << "#############@#@##@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@"<< endl;
-RooRealVar MassDT("MassDT","MassDT",fitMin,fitMax);
-MassDT.SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
-RooDataSet DT_UnBin("DT_UnBin","DT_UnBin",RooArgSet(MassDT));
+    cout << nDT << "#############@#@##@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@"<< endl;
+    RooRealVar MassDT("MassDT","MassDT",fitMin,fitMax);
+    MassDT.SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    RooDataSet DT_UnBin("DT_UnBin","DT_UnBin",RooArgSet(MassDT));
 
     //event loop
-for(Int_t i=0; i<nDT; i++){
-  //DT_Tree->GetEntry(i);
+    for(Int_t i=0; i<nDT; i++){
+      //DT_Tree->GetEntry(i);
 
-  //if(TMath::Abs(DiMuY)>0.8) continue;
-  if(rmass[i] <= fitMin || rmass[i] >= fitMax) continue;
-  //if(DiMuPt < minPt || DiMuPt > maxPt) continue;
-  if(rcostheta[i] > maxCsT || rcostheta[i] < minCsT)continue;
-  if(rphi[i] > maxPhi || rphi[i] < minPhi)continue;
+      //if(TMath::Abs(DiMuY)>0.8) continue;
+      if((rmass[i] <= fitMin) || (rmass[i] >= fitMax)) continue;
+      //if(DiMuPt < minPt || DiMuPt > maxPt) continue;
+      if((rcostheta[i] > maxCsT) || (rcostheta[i] < minCsT))continue;
+      if((rphi[i] > maxPhi) || (rphi[i] < minPhi))continue;
 
-  MassDT = rmass[i];
+      MassDT = rmass[i];
 
-  DT_UnBin.add(RooArgSet(MassDT));
-  }
+      DT_UnBin.add(RooArgSet(MassDT));
+      }
 
-//________________________________________________MONTE CARLO_________________________________________________________
-//TTree *MC_Tree  = (TTree*) MC_file->Get("myTree"));
-//MC_Tree->SetName("MC_Tree");
-//MC_Tree->SetBranchAddress("DiMuM", &DiMuM);
-//MC_Tree->SetBranchAddress("DiMuPt", &DiMuPt);
-//MC_Tree->SetBranchAddress("DiMuY", &DiMuY);
-//MC_Tree->SetBranchAddress("CosTheta", &CosTheta);
-//MC_Tree->SetBranchAddress("SinThetaCosPhi", &SinThetaCosPhi);
-//MC_Tree->SetBranchAddress("SinThetaSinPhi", &SinThetaSinPhi);
-//MC_Tree->SetBranchAddress("Phi", &Phi);
-//MC_Tree->SetBranchAddress("Theta", &Theta);
 
-UInt_t nMC = rmcmass.size();
+    UInt_t nMC = rmcmass.size();
 
-RooRealVar MassMC("MassMC","MassMC",fitMin,fitMax);
-MassMC.SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
-RooDataSet MC_UnBin("MC_UnBin","MC_UnBin",RooArgSet(MassMC));
+    RooRealVar MassMC("MassMC","MassMC",fitMin,fitMax);
+    MassMC.SetTitle("#it{m}_{#mu#mu} (GeV/#it{c}^{2})");
+    RooDataSet MC_UnBin("MC_UnBin","MC_UnBin",RooArgSet(MassMC));
 
 
     //event loop
-for(Int_t i=0; i<nMC; i++){
-  //MC_Tree->GetEntry(i);
+    for(Int_t i=0; i<nMC; i++){
+      //MC_Tree->GetEntry(i);
 
-  //if(TMath::Abs(DiMuY)>0.8) continue;
-  if(rmcmass[i] <= fitMin || rmcmass[i] >= fitMax) continue;
-  //if(DiMuPt < minPt || DiMuPt > maxPt) continue;
-  if( rmccostheta[i] > maxCsT || rmccostheta[i] < minCsT)continue;
-  if(rmcphi[i] > maxPhi || rmcphi[i] < minPhi)continue;
-  MassMC = rmcmass[i];
+      //if(TMath::Abs(DiMuY)>0.8) continue;
+      if(rmcmass[i] <= fitMin || rmcmass[i] >= fitMax) continue;
+      //if(DiMuPt < minPt || DiMuPt > maxPt) continue;
+      if( rmccostheta[i] > maxCsT || rmccostheta[i] < minCsT)continue;
+      if(rmcphi[i] > maxPhi || rmcphi[i] < minPhi)continue;
+      MassMC = rmcmass[i];
 
 
-  MC_UnBin.add(RooArgSet(MassMC));
-  }
+      MC_UnBin.add(RooArgSet(MassMC));
+      }
 
 //________________________________________________FIT_________________________________________________________
 // Crystal Ball P.D.F. variables for J/psi
@@ -561,7 +555,7 @@ RooRealVar N_JPsi("N_JPsi","N_JPsi",10,0,100);
 
 //Fit Crystal Ball to JPsi MC signal and fix the alpha and N
 RooCBShape CrystalBall_JPsi_MC("CrystalBall_JPsi_MC","CrystalBall_JPsi_MC",MassMC,Mean_JPsi,Sigma_JPsi,Alpha_JPsi,N_JPsi);
-CrystalBall_JPsi_MC.fitTo(MC_UnBin,Range("JPsi_Signal")); 
+CrystalBall_JPsi_MC.fitTo(MC_UnBin,Range("JPsi_Signal"));
 
 RooPlot* plot_MC3 = MassMC.frame(Title(" "));
 MC_UnBin.plotOn(plot_MC3);
@@ -573,8 +567,8 @@ plot_MC3->GetYaxis()->SetTitleOffset(1.3);
 plot_MC3->Draw();
 
 //RooCBShape CrystalBall_JPsi_DT("CrystalBall_JPsi_DT","CrystalBall_JPsi_DT",MassDT,Mean_JPsi,Sigma_JPsi,Alpha_JPsi,N_JPsi);
-//RooCBShape CrystalBall_JPsi_DT("CrystalBall_JPsi_DT","CrystalBall_JPsi_DT",MassDT,Mean_JPsi,RooConst(Sigma_JPsi.getVal()),RooConst(Alpha_JPsi.getVal()),RooConst(N_JPsi.getVal()));
-RooCBShape CrystalBall_JPsi_DT("CrystalBall_JPsi_DT","CrystalBall_JPsi_DT",MassDT,Mean_JPsi,RooConst(Sigma_JPsi.getVal()),Alpha_JPsi,N_JPsi);
+RooCBShape CrystalBall_JPsi_DT("CrystalBall_JPsi_DT","CrystalBall_JPsi_DT",MassDT,Mean_JPsi,Sigma_JPsi,RooConst(Alpha_JPsi.getVal()),RooConst(N_JPsi.getVal()));
+//RooCBShape CrystalBall_JPsi_DT("CrystalBall_JPsi_DT","CrystalBall_JPsi_DT",MassDT,Mean_JPsi,RooConst(Sigma_JPsi.getVal()),Alpha_JPsi,N_JPsi);
 
 //Exponential function for background
 RooRealVar Slope("Slope","Slope",-1.103,-2,2);
@@ -641,6 +635,7 @@ latex->DrawLatex(0.55,0.43,Form("N_{J/#psi} = %.1f #pm %.1f",nSignal_JPsi.getVal
 latex->DrawLatex(0.55,0.35,Form("#chi^{2}/#it{dof} = %.2f",plot_DT->chiSquare("DT_FitFunction_Norm[MassDT]_Range[fit_nll_DT_FitFunction_DT_UnBin]_NormRange[fit_nll_DT_FitFunction_DT_UnBin]", "h_DT_UnBin", 6)));
 
 
+
 if(iPoint != -1){
   TFile *yieldFile = new TFile("Yield_JPsi.root","UPDATE");
   TH2F *yieldPhiCsT =  0x0;
@@ -649,52 +644,84 @@ if(iPoint != -1){
   yieldPhiCsT = (TH2F*)yieldFile->Get("yieldPhiCsTStore");
   yieldCsT = (TH1F*)yieldFile->Get("yieldCsTStore");
   yieldPhi = (TH1F*)yieldFile->Get("yieldPhiStore");
+  Float_t binsPhi[6] = {0,0.4*TMath::Pi(),0.8*TMath::Pi(),1.2*TMath::Pi(),1.6*TMath::Pi(),2*TMath::Pi()};
+  Float_t binsCsT[5] = {-1,-0.5,0,0.5,1};
 
-  if(!yieldPhiCsT){
-    cout<<"Creating new histo"<<endl;
-    Float_t binsPhi[5] = {0,0.5*TMath::Pi(),TMath::Pi(),1.5*TMath::Pi(),2*TMath::Pi()};
-    Float_t binsCsT[4] = {-1,-0.5,0.5,1};
-    yieldPhi = new TH1F("yieldPhi","yieldPhi",4,binsPhi);
-    yieldCsT = new TH1F("yieldCsT","yieldCsT",3,binsCsT);
-    yieldPhiCsT = new TH2F("yieldPhiCsT","yieldPhiCsT",4,binsPhi,3,binsCsT);
 
-    yieldPhiCsT->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
-    yieldPhi->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
-    yieldCsT->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
-    yieldPhiCsT->GetXaxis()->SetTitle("#phi");
-    yieldPhiCsT->GetYaxis()->SetTitle("cos(#theta)");
 
-    yieldPhi->GetXaxis()->SetTitle("#phi");
-    yieldCsT->GetXaxis()->SetTitle("cos(#theta)");
+
+  if (type==0){
+    if(!yieldPhi){
+
+      //Float_t binsPhi[5] = {0,0.5*TMath::Pi(),TMath::Pi(),1.5*TMath::Pi(),2*TMath::Pi()};
+      yieldPhi = new TH1F("yieldPhi","yieldPhi",5,binsPhi);
+      yieldPhi->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
+      yieldPhi->GetXaxis()->SetTitle("#phi");
+
 
     }
-    yieldPhiCsT->SetName("yieldPhiCsT");
+
     yieldPhi->SetName("yieldPhi");
+    yieldPhi->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
+    yieldPhi->SetBinError(iPoint+1,nSignal_JPsi.getError());
+
+
+    yieldFile->Delete("yieldPhiStore;*");
+    yieldPhi->SetName("yieldPhiStore");
+    yieldPhi->Write();
+
+
+  }
+
+  else if (type==1){
+    if(!yieldCsT){
+      yieldCsT = new TH1F("yieldCsT","yieldCsT",4,binsCsT);
+      yieldCsT->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
+      yieldCsT->GetXaxis()->SetTitle("cos(#theta)");
+
+
+
+    }
     yieldCsT->SetName("yieldCsT");
+    yieldCsT->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
+    yieldCsT->SetBinError(iPoint+1,nSignal_JPsi.getError());
+    yieldFile->Delete("yieldCsTStore;*");
+    yieldCsT->SetName("yieldCsTStore");
+    yieldCsT->Write();
+  }
 
-  yieldPhiCsT->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
-  yieldPhiCsT->SetBinError(iPoint+1,nSignal_JPsi.getError());
+  else{
+    if(!yieldPhiCsT ){
+      cout<<"Creating new histo"<<endl;
 
-  yieldPhi->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
-  yieldPhi->SetBinError(iPoint+1,nSignal_JPsi.getError());
+      yieldPhiCsT = new TH2F("yieldPhiCsT","yieldPhiCsT",5,binsPhi,4,binsCsT);
+      yieldPhiCsT->SetTitle("J/#psi #rightarrow l^{+} l^{-}");
+      yieldPhiCsT->GetXaxis()->SetTitle("#phi");
+      yieldPhiCsT->GetYaxis()->SetTitle("cos(#theta)");
+      }
+      yieldPhiCsT->SetName("yieldPhiCsT");
+      yieldPhiCsT->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
+      yieldPhiCsT->SetBinError(iPoint+1,nSignal_JPsi.getError());
+      yieldFile->Delete("yieldPhiCsTStore;*");
+      yieldPhiCsT->SetName("yieldPhiCsTStore");
+      yieldPhiCsT->Write();
+  }
 
-  yieldCsT->SetBinContent(iPoint+1,nSignal_JPsi.getVal());
-  yieldCsT->SetBinError(iPoint+1,nSignal_JPsi.getError());
 
-  yieldFile->Delete("yieldPhiStore;*");
-  yieldFile->Delete("yieldCsTStore;*");
-  yieldFile->Delete("yieldPhiCsTStore;*");
-  yieldPhiCsT->SetName("yieldPhiCsTStore");
-  yieldPhi->SetName("yieldPhiStore");
-  yieldCsT->SetName("yieldCsTStore");
-  yieldPhiCsT->Write();
-  yieldPhi->Write();
-  yieldCsT->Write();
+
+
+
+
+
+
+
+
 
   c1->SetName(TString::Format("FitDiLepton_%d",iPoint));
   c1->Write();
   yieldFile->Close();
   }
+
 
 }
 
